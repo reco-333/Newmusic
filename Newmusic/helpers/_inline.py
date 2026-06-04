@@ -64,7 +64,10 @@ class Inline:
             self.ikb(
                 text=f"{name} ({code}) {'✔️' if code == _lang else ''}",
                 callback_data=f"lang_change {code}",
-               if code == _lang else ,
+               if code == _lang:
+                  result= value_a
+          else:
+                  result= None 
             )
             for code, name in langs.items()
         ]
