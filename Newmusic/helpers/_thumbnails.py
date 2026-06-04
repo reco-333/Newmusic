@@ -12,7 +12,7 @@ from Newmusic.helpers import Track
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class Thumbnail:
-    def init(self):
+    def __init__(self):
         self.size = (1280, 720)
         self.session: aiohttp.ClientSession | None = None
         self.API_URL = "" 
