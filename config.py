@@ -43,8 +43,8 @@ class Config:
         ]
 
        
-        self.DEFAULT_THUMB = getenv("DEFAULT_THUMB", "https://files.catbox.moe/jebxwm.jpg")
-        self.PING_IMG = getenv("PING_IMG", "https://files.catbox.moe/wz4ndo.jpg")
+        self.DEFAULT_THUMB = getenv("DEFAULT_THUMB", "https://te.legra.ph/file/3e40a408286d4eda24191.jpg")
+        self.PING_IMG = getenv("PING_IMG", "https://graph.org//file/389a372e8ae039320ca6c.png")
         self.START_IMG = getenv("START_IMG", "https://files.catbox.moe/83zj85.jpg")
         
     def check(self):
