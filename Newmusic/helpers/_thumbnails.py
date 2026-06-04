@@ -9,7 +9,7 @@ import random
 from Newmusic import config
 from Newmusic.helpers import Track
 
-BASE_DIR = os.path.dirname(os.path.abspath(file))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class Thumbnail:
     def init(self):
