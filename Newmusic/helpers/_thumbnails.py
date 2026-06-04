@@ -13,7 +13,7 @@ class Thumbnail:
         self.size = (1280, 720)
         self.session: aiohttp.ClientSession | None = None
         # API URL မသုံးချင်ရင် ဒီအတိုင်း အလွတ်ထားလို့ရပါတယ်
-        self.API_URL = "https://portal.arcmusic.fun/" 
+        self.API_URL = "" 
         
         title_font_path = os.path.join(BASE_DIR, "..", "helpers", "Raleway-Bold.ttf")
         info_font_path = os.path.join(BASE_DIR, "..", "helpers", "Inter-Light.ttf")
