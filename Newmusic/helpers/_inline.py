@@ -63,11 +63,7 @@ class Inline:
         buttons = [
             self.ikb(
                 text=f"{name} ({code}) {'✔️' if code == _lang else ''}",
-                callback_data=f"lang_change {code}",
-               if code == _lang:
-                  result= value_a
-          else:
-                  result= None 
+                callback_data=f"lang_change {code}"
             )
             for code, name in langs.items()
         ]
