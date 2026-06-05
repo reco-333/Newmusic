@@ -77,7 +77,7 @@ class Thumbnail:
             tx_start = 700
             
             # Song Title & Info
-            draw.text((tx_start, 180), "Now Playing", font=self.font_info, fill=(255, 200, 50))
+            draw.text((tx_start, 180), "Now Playing", font=self.font_info, fill=(255, 255, 255, 180))
             
             # Title wrap (ရှည်ရင် အောက်ဆင်းပေးမယ်)
             lines = textwrap.wrap(song.title, width=25)
