@@ -210,3 +210,11 @@ class YouTube:
         if url:
             self.url_cache[key] = (url, now + timedelta(seconds=self.cache_ttl))
         return url
+
+    # ------------------- DOWNLOAD METHOD (FOR COMPATIBILITY) -------------------
+    async def download(self, video_id: str, video: bool = False) -> str | None:
+        """
+        Compatibility method for existing code.
+        Returns a direct stream URL instead of downloading a file.
+        """
+        return await self.get_stream_url_cached(video_id, video)
