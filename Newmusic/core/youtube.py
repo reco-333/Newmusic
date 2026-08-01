@@ -16,8 +16,8 @@ from Newmusic import logger, config
 from Newmusic.helpers import Track, utils
 
 # --- SHRUTIBOTS API CONFIGURATION ---
-API_URL = "https://api01.shrutibots.site"  # သို့မဟုတ် https://api.shrutibots.site / https://api01.shrutibots.site
-API_KEY = "ShrutiBots7xhmAalRnTT0mTbgszR4"  # @ShrutiApibot မှ ထုတ်ယူထားသော သင်၏ Personal API Key ကို ဤနေရာတွင် ထည့်ပါ
+API_URL = "https://api01.shrutibots.site"  # သို့မဟုတ် https://shrutibots.site / https://api.shrutibots.site
+API_KEY = "ShrutiBots7xhmAalRnTT0mTbgszR4"  # @ShrutiApibot မှ ထုတ်ယူထားသော သင်၏ Personal API Key
 # ------------------------------------
 
 # --- COOKIE DATA START (Fallback အတွက်) ---
@@ -43,7 +43,7 @@ COOKIE_DATA = """# Netscape HTTP Cookie File
 .youtube.com	TRUE	/	TRUE	1804818226	__Secure-3PSIDTS	sidts-CjUBBj1CYnb_2un-x8U3DosdFcqPYVJhbg8Bk68ZCnIivIxZ-HGzJjNZhZ3mKsTTKPb9rfqcrxAA
 .youtube.com	TRUE	/	FALSE	1807842226	APISID	r2h8dJdwnPtOnB6w/A696rI3lpsRhDG7gE
 .youtube.com	TRUE	/	FALSE	1807842226	HSID	AKFaV2VhVw1F0A1Ki
-.youtube.com	TRUE	/	TRUE	1807842227	LOGIN_INFO	AFmmF2swRAIgcB7wcOs4WNVu-ntf7mqpZ0eDodNht4tOYj9GjX_22kcCIDZ6go5sU7AJYiXaiXvDo7RTNDux2DRqDwi5aMYf_6dA:QUQ3MjNmd2RNVmZwS2M4ajJCX0NDQTZRLUhZUERGOVU3ekR3UWpkZVZ3QXVwZ1JEWmM5cDExQWV4MzRzaXF5bS1uY0dFTUlDcDJySkVkd3pZbFRVc29uSEtKT0tscDRDOG93c3Zxd0R1ZkZCTlBYcGdqaFVzMWhhOTZaRWlwTDF6WDJWU0tiM3FmRW05dUlkMlVndFROblhyejBxeGc2a09R
+.youtube.com	TRUE	/	TRUE	1788834227	LOGIN_INFO	AFmmF2swRAIgcB7wcOs4WNVu-ntf7mqpZ0eDodNht4tOYj9GjX_22kcCIDZ6go5sU7AJYiXaiXvDo7RTNDux2DRqDwi5aMYf_6dA:QUQ3MjNmd2RNVmZwS2M4ajJCX0NDQTZRLUhZUERGOVU3ekR3UWpkZVZ3QXVwZ1JEWmM5cDExQWV4MzRzaXF5bS1uY0dFTUlDcDJySkVkd3pZbFRVc29uSEtKT0tscDRDOG93c3Zxd0R1ZkZCTlBYcGdqaFVzMWhhOTZaRWlwTDF6WDJWU0tiM3FmRW05dUlkMlVndFROblhyejBxeGc2a09R
 .youtube.com	TRUE	/	TRUE	1807842230	PREF	tz=Asia.Rangoon&f7=100&f4=4000000
 .youtube.com	TRUE	/	TRUE	1788834227	VISITOR_INFO1_LIVE	rQRaTxG5Dg8
 """
@@ -71,7 +71,7 @@ class YouTube:
         self.cookie_dir = "Newmusic/cookies"
         self.cookie_file = None
         
-        # 500 ပုဒ် Limit ပါတဲ့ Cache စနစ်
+        # 500 ပုဒ် Limit ပါတဲ့ Cache စနစ် (အမြန်ဆုံး အလုပ်လုပ်စေရန်)
         self.url_cache = LimitedCache(maxsize=500)       
         self.cache_ttl = 3600     # 1 hour cache TTL
         
@@ -168,7 +168,6 @@ class YouTube:
     async def get_stream_url(self, video_id: str, video: bool = False) -> str | None:
         """
         ShrutiBots API ကိုအသုံးပြု၍ Stream URL ထုတ်ယူခြင်း (API အလုပ်မလုပ်ပါက Cookie ဖြင့် yt_dlp သို့ Fallback လုပ်မည်)
-        - type=audio သို့မဟုတ် type=video
         """
         media_type = "video" if video else "audio"
         
@@ -177,13 +176,31 @@ class YouTube:
             api_endpoint = f"{API_URL.rstrip('/')}/download?url={video_id}&type={media_type}&api_key={API_KEY}"
             try:
                 async with aiohttp.ClientSession() as session:
-                    async with session.get(api_endpoint, timeout=10) as response:
+                    # allow_redirects=True ထည့်သွင်းထားသဖြင့် API က redirect လုပ်ပေးသော Direct URL ကို ဖမ်းယူနိုင်မည်
+                    async with session.get(api_endpoint, timeout=12, allow_redirects=True) as response:
                         if response.status == 200:
-                            data = await response.json()
-                            # API မှပေးသော JSON ပုံစံပေါ်မူတည်၍ url ဖမ်းယူခြင်း (ဥပမာ: data['url'] သို့မဟုတ် data['link'])
-                            stream_url = data.get("url") or data.get("link") or data.get("stream_url")
-                            if stream_url:
-                                return stream_url
+                            content_type = response.headers.get("Content-Type", "")
+                            
+                            # 1. ကျသေချာသော JSON ဖြစ်နေပါက
+                            if "application/json" in content_type:
+                                try:
+                                    data = await response.json()
+                                    stream_url = data.get("url") or data.get("link") or data.get("stream_url")
+                                    if stream_url:
+                                        return stream_url
+                                except:
+                                    pass
+                            
+                            # 2. API က Direct URL ကို text သို့မဟုတ် final URL အနေနဲ့ ပို့ပေးနေပါက
+                            final_url = str(response.url)
+                            if final_url and "shrutibots.site" not in final_url and final_url.startswith("http"):
+                                return final_url
+                                
+                            text_data = await response.text()
+                            if text_data:
+                                text_data = text_data.strip()
+                                if text_data.startswith("http"):
+                                    return text_data
             except Exception as e:
                 logger.error(f"ShrutiBots API error for {video_id}: {e}, switching to fallback...")
 
@@ -214,7 +231,7 @@ class YouTube:
 
     # ------------------- CACHED VERSION (500-LIMIT LRU) -------------------
     async def get_stream_url_cached(self, video_id: str, video: bool = False) -> str | None:
-        """Cache စစ်ဆေးခြင်း (အများဆုံး ၅၀၀ ပုဒ်ထိ မှတ်မည်)"""
+        """Cache စစ်ဆေးခြင်း (အများဆုံး ၅၀၀ ပုဒ်ထိ သိမ်းမည်၊ ပြည့်ရင် အဟောင်းအလိုအလျောက်ဖျက်မည်)"""
         now = datetime.now()
         key = f"{video_id}_{video}"
         
