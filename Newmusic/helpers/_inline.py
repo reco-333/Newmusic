@@ -24,13 +24,12 @@ class Inline:
         remove: bool = False,
     ) -> types.InlineKeyboardMarkup:
         keyboard = []
-        if status:
-            keyboard.append([self.ikb(text=status, callback_data=f"controls status {chat_id}")])
-        elif timer:
-            keyboard.append([self.ikb(text=timer, callback_data=f"controls status {chat_id}")])
+        
+        
+        display_text = status if status else (timer if timer else "00:00 / 00:00")
+        keyboard.append([self.ikb(text=display_text, callback_data=f"controls status {chat_id}")])
         
         if not remove:
-            
             keyboard.append(
                 [
                     self.ikb(text="▷", callback_data=f"controls resume {chat_id}"),
